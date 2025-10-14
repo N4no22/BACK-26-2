@@ -41,7 +41,7 @@ app.use('/api/pagos', pagosRoutes);
 app.use('/api/detalles_venta', detallesVentaRoutes);
 app.use('/api/movimientos-stock', movimientosStockRoutes);
 app.use('/api/descuentos',descuentosRoutes);
-app.use('/api/arqueo-caja',arqueoCajaRoutes);
+app.use('/api/arqueo_caja',arqueoCajaRoutes);
 app.use('/api/usuarios',usuariosRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 

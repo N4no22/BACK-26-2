@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import {
   obtenerPagos,
@@ -8,9 +7,9 @@ import {
 
 const router = Router();
 
-router.get('/', obtenerPagos); // GET /pagos
-router.get('/:clienteId', obtenerPagosPorCliente); // GET /pagos/:clienteId
-router.post('/', crearPagoFiado); // POST /pagos
+router.get('/', obtenerPagos);
+router.get('/cliente/:clienteId', obtenerPagosPorCliente);
+router.post('/', crearPagoFiado);
 
 export default router;
 

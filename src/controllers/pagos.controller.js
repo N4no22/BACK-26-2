@@ -23,11 +23,12 @@ export const obtenerPagosPorCliente = async (req, res) => {
   }
 };
 
-// Crear nuevo pago fiado
+// Crear nuevo pago fiado y actualizar saldo pendiente
 export const crearPagoFiado = async (req, res) => {
   const nuevoPago = req.body;
   try {
-    const pagoCreado = await PagosFiadosModel.crear(nuevoPago);
+    // Usamos la función que hace ambas cosas dentro de una transacción
+    const pagoCreado = await PagosFiadosModel.crearPagoFiadoConSaldo(nuevoPago);
     res.status(201).json(pagoCreado);
   } catch (error) {
     console.error('Error al crear pago fiado:', error);
