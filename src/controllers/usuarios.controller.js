@@ -1,6 +1,43 @@
 // src/controllers/usuarios.controller.js
 import Usuario from '../models/usuarios.model.js';
+import jwt from "jsonwebtoken";
 
+
+export const loginUsuario = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const usuario = await Usuario.getByEmail(email);
+
+    if (!usuario) {
+      return res.status(401).json({ message: "Usuario no encontrado" });
+    }
+
+    if (usuario.password !== password) {
+      return res.status(401).json({ message: "Contraseña incorrecta" });
+    }
+
+    // 🔥 CREAR TOKEN
+    const token = jwt.sign(
+      {
+        id: usuario.id,
+        email: usuario.email
+      },
+      "secreto_super_pos", // después lo pasamos a .env
+      { expiresIn: "1h" }
+    );
+
+    // 🔥 RESPUESTA PRO
+    res.json({
+      message: "Login correcto",
+      usuario,
+      token
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 // Obtener todos los usuarios
 export const getAllUsuarios = async (req, res) => {
   try {

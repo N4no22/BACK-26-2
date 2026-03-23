@@ -13,30 +13,89 @@ export const getProductoById = async (id) => {
 };
 
 // Crear producto con movimiento de stock (entrada)
-export const createProducto = async ({ nombre, descripcion, precio, stock, codigo_barras, proveedor_id = null, categoria_id = null, usuario_id }) => {
+export const createProducto = async ({
+  nombre,
+  descripcion = null,
+  precio,
+  stock,
+  codigo_barras = null,
+  proveedor_id = null,
+  categoria_id = null,
+  usuario_id,
+  tipo_venta = 'unidad',
+  unidad_medida = 'unidad'
+}) => {
   const client = await db.connect();
+
   try {
     await client.query('BEGIN');
 
+    // 🔥 VALIDACIONES
+
+    if (!nombre || nombre.trim() === '') {
+      throw new Error('El nombre es obligatorio');
+    }
+
+    if (precio <= 0) {
+      throw new Error('El precio debe ser mayor a 0');
+    }
+
+    if (stock < 0) {
+      throw new Error('El stock no puede ser negativo');
+    }
+
+    if (!['unidad', 'peso'].includes(tipo_venta)) {
+      throw new Error('Tipo de venta inválido');
+    }
+
+    if (!['unidad', 'kg', 'g', 'litro'].includes(unidad_medida)) {
+      throw new Error('Unidad de medida inválida');
+    }
+
+    if (tipo_venta === 'unidad' && !Number.isInteger(stock)) {
+      throw new Error('El stock debe ser entero para productos por unidad');
+    }
+
+    // Forzar coherencia
+    if (tipo_venta === 'unidad') {
+      unidad_medida = 'unidad';
+    }
+
+    // 1. Insertar producto
     const resultProducto = await client.query(
-      `INSERT INTO productos (nombre, descripcion, precio, stock, categoria_id, proveedor_id, codigo_barras)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [nombre, descripcion, precio, stock, categoria_id, proveedor_id, codigo_barras]
+      `INSERT INTO productos 
+      (nombre, descripcion, precio, stock, categoria_id, proveedor_id, codigo_barras, tipo_venta, unidad_medida)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *`,
+      [
+        nombre.trim(),
+        descripcion,
+        precio,
+        stock,
+        categoria_id,
+        proveedor_id,
+        codigo_barras,
+        tipo_venta,
+        unidad_medida
+      ]
     );
 
     const producto = resultProducto.rows[0];
 
+    // 2. Movimiento inicial de stock
     if (stock > 0) {
       await client.query(
-        `INSERT INTO movimientos_stock (producto_id, tipo, cantidad, fecha, motivo, usuario_id)
-         VALUES ($1, 'entrada', $2, NOW(), 'Carga inicial', $3)`,
+        `INSERT INTO movimientos_stock 
+        (producto_id, tipo, cantidad, fecha, motivo, usuario_id)
+        VALUES ($1, 'entrada', $2, NOW(), 'Carga inicial', $3)`,
         [producto.id, stock, usuario_id]
       );
     }
 
     await client.query('COMMIT');
+
     return producto;
+
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

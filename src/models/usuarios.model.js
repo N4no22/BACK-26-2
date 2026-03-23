@@ -7,6 +7,14 @@ const Usuario = {
     const result = await db.query('SELECT * FROM usuarios');
     return result.rows;
   },
+   
+   getByEmail: async (email) => {
+    const result = await db.query(
+      'SELECT * FROM usuarios WHERE email = $1',
+      [email]
+    );
+    return result.rows[0];
+  },
 
   // Obtener usuario por ID
   getById: async (id) => {

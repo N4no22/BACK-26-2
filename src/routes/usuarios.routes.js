@@ -1,4 +1,3 @@
-// src/routes/usuarios.routes.js
 import express from 'express';
 import {
   getAllUsuarios,
@@ -6,15 +5,19 @@ import {
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  loginUsuario
 } from '../controllers/usuarios.controller.js';
 
 const router = express.Router();
 
-// Rutas para usuarios
-router.get('/', getAllUsuarios);  // Obtener todos los usuarios
-router.get('/:id', getUsuarioById);  // Obtener usuario por ID
-router.post('/', createUsuario);  // Crear un nuevo usuario
-router.put('/:id', updateUsuario);  // Actualizar un usuario
-router.delete('/:id', deleteUsuario);  // Eliminar un usuario
+// LOGIN primero
+router.post('/login', loginUsuario);
+
+// CRUD
+router.get('/', getAllUsuarios);
+router.get('/:id', getUsuarioById);
+router.post('/', createUsuario);
+router.put('/:id', updateUsuario);
+router.delete('/:id', deleteUsuario);
 
 export default router;
